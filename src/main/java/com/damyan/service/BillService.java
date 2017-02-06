@@ -12,21 +12,21 @@ public class BillService {
     public Double produceBill(List<Item> items) {
         Double itemTotal =items.stream().map(Item::getPrice).mapToDouble(Double::new).sum();
         boolean hasFood = items.stream().map(Item::getType).filter(Type.FOOD::equals).findFirst().isPresent();
+        Double serviceCharge = 0.0;
 
         if (hasFood) {
-            itemTotal = itemTotal + BigDecimal.valueOf(itemTotal/10).setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue();
-
+            serviceCharge = BigDecimal.valueOf(itemTotal/10).setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue();
             boolean hasHotFood = items.stream().map(Item::getWarmth).filter(Warmth.HOT::equals).findFirst().isPresent();
 
             if (hasHotFood) {
-                Double hotServiceCharge = itemTotal/5;
-                if (hotServiceCharge < 20) {
-                    itemTotal = itemTotal + hotServiceCharge;
-                } else {
-                    itemTotal = itemTotal + 20;
-                }
+                serviceCharge += itemTotal/5;
             }
         }
-        return itemTotal;
+
+        if (serviceCharge > 20) {
+            return itemTotal + 20;
+        } else {
+            return itemTotal + serviceCharge;
+        }
     }
 }
